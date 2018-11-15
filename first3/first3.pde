@@ -4,7 +4,7 @@ import peasy.*;
 
 PeasyCam camera;
 PiezoDisto disto;
- 
+World world; 
 
 float y = 100;
 
@@ -43,6 +43,8 @@ void setup() {
       -15 + (int)random(30),
       5 + (int)random(15));
       
+    world= new World(0,0,0,50);
+      
     disto.changeColor();
    
 
@@ -66,23 +68,9 @@ void draw() {
 
  
 
-  pushMatrix();
-
- 
-
-  translate(58, 48, 0);
-
-  rotateY(0.0);
-
-  noFill();
-
-  box(40);
 
   
-
-  popMatrix();
-  
-  
+  world.display();
   disto.display();
 
  
