@@ -22,18 +22,12 @@ void setup() {
 
    
 
-        // PeasyCam constructor:
-
+    // PeasyCam constructor:
     // PeasyCam(PApplet parent,
-
     //          double lookAtX, double lookAtY, double lookAtZ,
-
     //          double distance);
-
     camera = new PeasyCam(this, 0, 0, 0, 50);
-
     camera.setMinimumDistance(0);
-
     camera.setMaximumDistance(500);
 
 
@@ -55,27 +49,15 @@ void setup() {
  
 
 // The statements in draw() are run until the
-
 // program is stopped. Each statement is run in
-
 // sequence and after the last line is read, the first
-
 // line is run again.
-
 void draw() {
 
   background(0);   // Set the background to black
-
- 
-
-
   
   world.display();
   disto.display();
-
- 
-
-  
 
 }
 

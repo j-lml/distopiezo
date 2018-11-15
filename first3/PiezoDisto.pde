@@ -1,21 +1,18 @@
 class Element {
-  int x, y, z, w;
-  
+  int x, y, z, w;  
   color cf,cs;
   
-}
-
-class PiezoDisto extends Element {
-
-  PiezoDisto (int x, int y, int z, int w) {
+  Element (int x, int y, int z, int w) {
     this.x = x;
     this.y = y;
     this.z = z;
-    this.w = w;
-    this.changeColor();
+    this.w = w;   
     
+    cs=#FFFFFF;    
+    cf=#FFFFFF;
   }
-
+  
+  
   void changeColor() {
     cf = color(
       int(random(0, 255)),
@@ -25,6 +22,17 @@ class PiezoDisto extends Element {
     
      cs=#FFFFFF;
   }
+  
+}
+
+class PiezoDisto extends Element {
+
+  PiezoDisto (int x, int y, int z, int w) {
+    super(x,y,z,w);
+    
+    cs=#FFFFFF;    
+  }
+
 
   void display() {
     fill(cf);
@@ -37,16 +45,11 @@ class PiezoDisto extends Element {
   }
 }
 
-class World {
+class World extends Element {
   
-   int x, y, z, w;  
-   color cf,cs;
-   
+ 
    World (int x, int y, int z, int w) {
-    this.x = x;
-    this.y = y;
-    this.z = z;
-    this.w = w;    
+     super(x,y,z,w);
     
     cs=#FFCC00;
     
