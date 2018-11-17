@@ -38,8 +38,8 @@ class PiezoDisto extends Element {
     fill(cf);
     stroke(cs);
     
-    pushMatrix();
-      translate(x, y, z);
+    pushMatrix();      
+      translate(x+w/2, y+w/2, z+w/2);
       box(w);
     popMatrix();
   }
@@ -62,7 +62,7 @@ class World extends Element {
     
       pushMatrix();
       
-      translate(x, y, z);    
+      translate(x+w/2, y+w/2, z+w/2);    
       rotateY(0.0);
       box(w);
     
@@ -105,6 +105,48 @@ class Axis extends Element {
       rotateY(0.0);
       
       drawAxes(w);
+    
+      popMatrix();
+  }
+  
+}
+
+
+class Point extends Element {
+  
+ 
+   Point (int x, int y, int z) {
+     super(x,y,z,1);
+    
+    cs=#FF0000;
+    cf=color(240, 0, 0, 255);
+    
+  }
+  
+  void drawLines(float size){
+    //X  - red
+    stroke(cs);    
+    line(0-size/2,0,0,size/2,0,0);
+    //Y - green
+    stroke(cs);
+    line(0,0-size/2,0,0,size/2,0);
+    //Z - blue
+    stroke(cs);
+    line(0,0,0-size/2,0,0,size/2);
+  }
+  
+  void display() {
+      fill(cf);
+      stroke(cs);
+      //noFill();
+    
+      pushMatrix();
+      
+      translate(x, y, z);    
+      rotateY(0.0);
+      
+      drawLines(w);
+      //box(0.5);
     
       popMatrix();
   }
