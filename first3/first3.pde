@@ -47,7 +47,7 @@ void setup() {
     axis= new Axis(0,0,0,10);    
     p= new Point(-1,-1,-1);
     
-    for (int i=0; i<1000; i++) {
+    for (int i=0; i<10000; i++) {
       points.add( new Point( (int)random(1300),
       (int)random(1300),
       (int)random(1300) ) );    
