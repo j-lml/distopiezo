@@ -40,7 +40,7 @@ void setup() {
       +15 + (int)random(30),
       +15 + (int)random(30),
       +15 + (int)random(30),
-      5 + (int)random(15));
+     10);
       
     world= new World(0,0,0,50);
     

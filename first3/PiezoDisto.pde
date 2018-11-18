@@ -26,21 +26,39 @@ class Element {
 }
 
 class PiezoDisto extends Element {
+  
+  float inc=0;
+  float ori=-90;  //FRENTE=0 IZQ=90 DCHA=-90 ATRAS=180
 
   PiezoDisto (int x, int y, int z, int w) {
     super(x,y,z,w);
     
     cs=#FFFFFF;    
   }
+  
+  void setAngle(int angle) {
+    ori=angle;
+  }
+  
+  void setInc(int angle) {
+    inc=angle;
+  }
+  
 
 
   void display() {
     fill(cf);
     stroke(cs);
     
-    pushMatrix();      
-      translate(x+w/2, y+w/2, z+w/2);
-      box(w);
+    pushMatrix();
+       
+      translate(x, y, z);    
+      rotateY(radians(ori));
+      rotateX(radians(inc));
+      box(w/10,w/10,w);
+      
+      stroke(192,192,192);
+      line(0,0,0,0,0,w+1);
     popMatrix();
   }
 }
@@ -50,6 +68,7 @@ class World extends Element {
  
    World (int x, int y, int z, int w) {
      super(x,y,z,w);
+     
     
     cs=#FFCC00;
     
@@ -61,11 +80,11 @@ class World extends Element {
       noFill();
     
       pushMatrix();
-      
-      translate(x+w/2, y+w/2, z+w/2);    
-      rotateY(0.0);
-      box(w);
+
     
+      translate(x+w/2, y+w/2, z+w/2);
+      box(w);    
+      
       popMatrix();
   }
   
@@ -116,6 +135,15 @@ class Point extends Element {
   
  
    Point (int x, int y, int z) {
+     super(x,y,z,1);
+    
+    cs=#FF0000;
+    cf=color(240, 0, 0, 255);
+    
+  }
+  
+  Point (int x, int y, int z, int grados, int dist) {
+    
      super(x,y,z,1);
     
     cs=#FF0000;
