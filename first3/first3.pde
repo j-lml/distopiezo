@@ -23,6 +23,7 @@ void setup() {
   subscriber.connect("tcp://127.0.0.1:5556");
   String filter="";
   subscriber.subscribe(filter.getBytes());
+  subscriber.setReceiveTimeOut(10);
   
   //SCREEN
   size(640, 480, P3D);
@@ -93,8 +94,12 @@ void draw() {
   }
   
   //ZMQ
-  //String rcv = subscriber.recvStr();
-  //println(rcv);
+   //Msg msg = ZMQ.recv(subscriber, ZMQ.ZMQ_DONTWAIT);
+  String rcv = subscriber.recvStr();
+  if (rcv != null) {
+    println(rcv);
+  }
+  
 
 
 }
