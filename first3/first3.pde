@@ -1,31 +1,34 @@
 import peasy.*;
-
+import org.zeromq.ZMQ;
  
 
 PeasyCam camera;
 PiezoDisto disto;
 World world;
 Axis axis;
-Point p;
-
+Point p; 
+ZMQ.Socket subscriber;
 
 ArrayList<Point> points = new ArrayList<Point>();
-
 float y = 100;
-
-// The statements in the setup() function
-
-// run once when the program begins
-
-void setup() { 
-
-  size(640, 480, P3D);
 
  
 
+// The statements in the setup() function
+// run once when the program begins
+void setup() { 
+  //ZMQ
+  ZMQ.Context context = ZMQ.context(1);
+  subscriber = context.socket(ZMQ.SUB);
+  subscriber.connect("tcp://127.0.0.1:5556");
+  String filter="";
+  subscriber.subscribe(filter.getBytes());
+  
+  //SCREEN
+  size(640, 480, P3D);
+ 
+  //INIT
   stroke(255);     // Set stroke color to white
-
-   
 
     // PeasyCam constructor:
     // PeasyCam(PApplet parent,
@@ -61,34 +64,38 @@ void setup() {
     camera.rotateY(0);
     camera.rotateZ(0);
     
-        
-   
 
   //noLoop();
 
 }
 
- 
+
 
 // The statements in draw() are run until the
 // program is stopped. Each statement is run in
 // sequence and after the last line is read, the first
 // line is run again.
-void draw() {
-
-  background(0);   // Set the background to black
+void draw() {  
   
+  //set the background to black
+  background(0);   
+  
+  //world
   world.display();
-  disto.display();
-  
+  disto.display();  
   axis.display();
   
-  p.display();
-  
+  //puntos
+  p.display(); 
   
   for (Point part : points) {
     part.display();
   }
+  
+  //ZMQ
+  //String rcv = subscriber.recvStr();
+  //println(rcv);
+
 
 }
 

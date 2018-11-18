@@ -142,14 +142,6 @@ class Point extends Element {
     
   }
   
-  Point (int x, int y, int z, int grados, int dist) {
-    
-     super(x,y,z,1);
-    
-    cs=#FF0000;
-    cf=color(240, 0, 0, 255);
-    
-  }
   
   void drawLines(float size){
     //X  - red
