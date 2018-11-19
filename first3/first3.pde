@@ -20,8 +20,8 @@ void setup() {
   //ZMQ
   ZMQ.Context context = ZMQ.context(1);
   subscriber = context.socket(ZMQ.SUB);
-  subscriber.connect("tcp://127.0.0.1:5556");
-  String filter="";
+  subscriber.connect("tcp://127.0.0.1:8000");
+  String filter="10001";
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
   
