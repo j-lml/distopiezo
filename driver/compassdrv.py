@@ -11,10 +11,14 @@ context=None
 socket=None
 logger=None
 PORT = "8000"
+TYPE_DRV = "COMPASS"
+MACHINE_NAME = "M1"
 APP_NAME = "COMPASS_DRV"
 
 def logger_init(path):
+    global TYPE_DRV
     global APP_NAME
+    global MACHINE_NAME
 
     #logger
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
@@ -36,7 +40,9 @@ def logger_init(path):
 
     #init
     logger.debug( "logger_init()" )
+    logger.info("machine name: " + MACHINE_NAME )
     logger.info("app name: " + APP_NAME )
+    logger.info("driver: " + TYPE_DRV )
     logger.info("log file: " + path )
 
     return logger
@@ -64,12 +70,21 @@ def help():
     print("run:     ejecuta programa principal")
     exit(0);
 
+def send_sts():
+    global TYPE_DRV
+    global APP_NAME
+    global MACHINE_NAME
+    cad=""
+    # sts;type;machine_name;app_name;status;val1;val2;val3
+    cad="STS"  + ";" + TYPE_DRV + ";" + MACHINE_NAME + ";" + APP_NAME+ ";" + "ON" ;
+
 def run():
     logger.debug("run()")
     while True:
         topic = random.randrange(9999,10005)
         messagedata = random.randrange(1,215) - 80
         print "%d %d" % (topic, messagedata)
+        #socket.send("%d %d" % (topic, messagedata))
         socket.send("%d %d" % (topic, messagedata))
         time.sleep(1)
 
@@ -93,7 +108,6 @@ def parse_commands():
             globals()[items[0]](items[1])
     except:
         help()
-
 
 
 if __name__ == "__main__":
