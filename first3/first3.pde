@@ -21,7 +21,7 @@ void setup() {
   ZMQ.Context context = ZMQ.context(1);
   subscriber = context.socket(ZMQ.SUB);
   subscriber.connect("tcp://127.0.0.1:8000");
-  String filter="10001";
+  String filter="STS";
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
   
@@ -98,6 +98,21 @@ void draw() {
   String rcv = subscriber.recvStr();
   if (rcv != null) {
     println(rcv);
+    String[] items = split(rcv, ';');
+    
+    String _command=items[0];
+    String _type=items[1];
+    String _machine=items[2];
+    String _element=items[3];
+    String _status=items[4];   
+    
+    if (_type.equals("COMPASS")) {
+        String _p1=items[5];
+        disto.setAngle( float(_p1) );
+    }
+    
+    
+    
   }
   
 

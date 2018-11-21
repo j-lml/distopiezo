@@ -36,11 +36,11 @@ class PiezoDisto extends Element {
     cs=#FFFFFF;    
   }
   
-  void setAngle(int angle) {
+  void setAngle(float angle) {
     ori=angle;
   }
   
-  void setInc(int angle) {
+  void setInc(float angle) {
     inc=angle;
   }
   
