@@ -14,6 +14,25 @@ PORT = "8000"
 TYPE_DRV = "COMPASS"
 MACHINE_NAME = "M1"
 APP_NAME = "COMPASS_DRV"
+HEADER= TYPE_DRV + ";" + MACHINE_NAME + ";" + APP_NAME
+
+_angle=0;
+
+def get_angle():
+    return _angle;
+
+def set_angle(angle):
+    global _angle
+
+    try:
+        new_angle=float(angle)
+    except:
+        return
+
+    new_angle = new_angle % 360
+    if (new_angle != _angle):
+        _angle=new_angle
+        send_sts()
 
 def logger_init(path):
     global TYPE_DRV
@@ -22,6 +41,8 @@ def logger_init(path):
 
     #logger
     logFormatter = logging.Formatter("%(asctime)s [%(threadName)-12.12s] [%(levelname)-5.5s]  %(message)s")
+
+    logFormatter = logging.Formatter("%(asctime)s [%(levelname)-5.5s]  %(message)s", "%Y%m%d %H%M%S")
     logger = logging.getLogger(APP_NAME)
     logger.setLevel(logging.DEBUG)
 
@@ -61,6 +82,7 @@ def zmq_init():
     socket.bind("tcp://*:%s" % PORT)
 
     logger.info( "bind: " + PORT )
+
     return socket
 
 def help():
@@ -68,15 +90,22 @@ def help():
     print("drv - v0.1")
     print("help:    muestra ayuda")
     print("run:     ejecuta programa principal")
+    print("compass:     ejecuta programa principal")
     exit(0);
 
+def send_msg(topic,message_data):
+    socket.send("%s %s" % (topic, message_data))
+    logger.info("" + "["+ topic +"]," + message_data )
+
+def send_hello():
+    # hi;type;machine_name;app_name;status;val1;val2;val3
+    cad="HI"  + ";" + HEADER + ";"
+    send_msg( "HI" , cad)
+
 def send_sts():
-    global TYPE_DRV
-    global APP_NAME
-    global MACHINE_NAME
-    cad=""
     # sts;type;machine_name;app_name;status;val1;val2;val3
-    cad="STS"  + ";" + TYPE_DRV + ";" + MACHINE_NAME + ";" + APP_NAME+ ";" + "ON" ;
+    cad="STS"  + ";" + HEADER + ";" + "ON" + ";" + str(get_angle()) + ";"
+    send_msg( "STS" , cad)
 
 def run():
     logger.debug("run()")
@@ -87,6 +116,21 @@ def run():
         #socket.send("%d %d" % (topic, messagedata))
         socket.send("%d %d" % (topic, messagedata))
         time.sleep(1)
+
+def compass():
+    logger.debug("compass()")
+    count=0
+    HEARTBEAT=5
+    while True:
+        count=count+1
+        if ( count % HEARTBEAT == 0):
+            count=0
+            rango = random.randrange(0,36000)
+            rango = float(rango) / float(100)
+            set_angle(rango)
+
+        time.sleep(1)
+
 
 def parse_commands():
     logger.debug("parse_commands()")
@@ -106,8 +150,11 @@ def parse_commands():
             globals()[items[0]]()
         if (len(items)==2):
             globals()[items[0]](items[1])
-    except:
+    except Exception as e:
+        print getattr(e, 'message', repr(e))
         help()
+
+
 
 
 if __name__ == "__main__":
@@ -116,6 +163,7 @@ if __name__ == "__main__":
     logger=logger_init(log_file)
     #ZMQ
     socket=zmq_init()
+    send_hello()
 
     #MAIN
     parse_commands()
