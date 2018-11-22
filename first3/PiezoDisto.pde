@@ -1,8 +1,8 @@
 class Element {
-  int x, y, z, w;  
+  float x, y, z, w;  
   color cf,cs;
   
-  Element (int x, int y, int z, int w) {
+  Element (float x, float y, float z, float w) {
     this.x = x;
     this.y = y;
     this.z = z;
@@ -11,6 +11,10 @@ class Element {
     cs=#FFFFFF;    
     cf=#FFFFFF;
   }
+  
+  float getX() {return x;}
+  float getY() {return y;}
+  float getZ() {return z;}
   
   
   void changeColor() {
@@ -27,21 +31,37 @@ class Element {
 
 class PiezoDisto extends Element {
   
-  float inc=0;
-  float ori=-90;  //FRENTE=0 IZQ=90 DCHA=-90 ATRAS=180
+  
+  float _azimuth=0;  //FRENTE=0 IZQ=90 DCHA=-90 ATRAS=180
+  float _polar=0;
+  float _radio=20;
 
-  PiezoDisto (int x, int y, int z, int w) {
+  PiezoDisto (float x, float y, float z,float w) {
     super(x,y,z,w);
     
     cs=#FFFFFF;    
   }
   
   void setAngle(float angle) {
-    ori=angle;
+    _azimuth=angle;
   }
   
   void setInc(float angle) {
-    inc=angle;
+    _polar=angle;
+  }
+  
+  void setRadio(float distance) {
+    _radio=distance;
+  }
+  
+  PVector getVector(float r) {
+    r=r/20;
+    //a partir de distacia r (y datos de orientacion del disto) => obtener Pvector con coordenadas
+    float x1=r*cos(_azimuth)*sin(_polar);
+    float y1=r*sin(_azimuth)*sin(_polar);
+    float z1=r*cos(_polar);
+    
+    return new PVector(x1,y1,z1);
   }
   
 
@@ -53,8 +73,8 @@ class PiezoDisto extends Element {
     pushMatrix();
        
       translate(x, y, z);    
-      rotateY(radians(ori));
-      rotateX(radians(inc));
+      rotateY(radians(_azimuth));
+      rotateX(radians(_polar));
       box(w/10,w/10,w);
       
       stroke(192,192,192);
@@ -66,7 +86,7 @@ class PiezoDisto extends Element {
 class World extends Element {
   
  
-   World (int x, int y, int z, int w) {
+   World (float x, float y, float z, float w) {
      super(x,y,z,w);
      
     
@@ -94,7 +114,7 @@ class World extends Element {
 class Axis extends Element {
   
  
-   Axis (int x, int y, int z, int w) {
+   Axis (float x, float y, float z, float w) {
      super(x,y,z,w);
     
     cs=#FFCC00;
@@ -134,7 +154,7 @@ class Axis extends Element {
 class Point extends Element {
   
  
-   Point (int x, int y, int z) {
+   Point (float x, float y, float z) {
      super(x,y,z,1);
     
     cs=#FF0000;

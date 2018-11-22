@@ -53,7 +53,7 @@ void setup() {
     axis= new Axis(0,0,0,10);    
     p= new Point(-1,-1,-1);
     
-    for (int i=0; i<10000; i++) {
+    for (int i=0; i<1; i++) {
       points.add( new Point( (int)random(1300),
       (int)random(1300),
       (int)random(1300) ) );    
@@ -123,7 +123,14 @@ void draw() {
       disto.setInc( float(_p2) );
     }
     
-    if (_type.equals("DISTO")) {        
+    if (_type.equals("DISTO")) {
+       _p1=items[5];  //r
+       PVector p=disto.getVector( float(_p1) );
+       
+       Point point=new Point( p.x, p.y, p.z);
+       point.display();
+       points.add( point );
+       
     }
     
     
