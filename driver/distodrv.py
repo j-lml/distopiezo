@@ -12,37 +12,34 @@ from logging.handlers import TimedRotatingFileHandler
 from basedrv import *
 
 
-class CompassDriver(BaseDriver):
+class DistoDriver(BaseDriver):
 
-    _angle=0;
+    _distance=0;
 
     def __init__(self):
-        self.PORT = "8001"
-        self.TYPE_DRV = "COMPASS"
+        self.PORT = "8003"
+        self.TYPE_DRV = "DISTO"
         self.MACHINE_NAME = "M1"
-        self.APP_NAME = "C1"
+        self.APP_NAME = "D1"
         BaseDriver.__init__(self)
 
     #--------------------------------------
     #   PROPIEDADES
     #--------------------------------------
     @property
-    def angle(self):
-        return self._angle;
+    def distance(self):
+        return self._distance;
 
-    @angle.setter
-    def angle(self, giro):
-
+    @distance.setter
+    def distance(self, distance):
         try:
-            new_angle=float(giro)
+            new_distance=float(distance)
         except:
-            self.logger.debug("angle ["+ giro +"] - no es float()")
+            self.logger.debug("distance ["+ distance +"] - no es float()")
             return
 
-        new_angle = new_angle % 360
-
-        if (new_angle != self.angle):
-            self._angle=new_angle
+        if (new_distance != self.distance):
+            self._distance=new_distance
             self.send_sts()
 
     #--------------------------------------
@@ -51,7 +48,7 @@ class CompassDriver(BaseDriver):
 
     def send_sts(self):
         # sts;type;machine_name;app_name;status;val1;val2;val3
-        cad="STS"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(self.angle) + ";"
+        cad="STS"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(self.distance) + ";"
         self.send_msg( "STS" , cad)
 
     def random(self):
@@ -61,9 +58,8 @@ class CompassDriver(BaseDriver):
             count=count+1
             if ( count % self.HEARTBEAT == 0):
                 count=0
-                a = random.randrange(0,36000)
-                a = float(a) / float(100)
-                self.angle=a
+                a = random.randrange(0,5000)
+                self.distance=a
 
             time.sleep(1)
 
@@ -74,7 +70,7 @@ class CompassDriver(BaseDriver):
 
 
 if __name__ == "__main__":
-    drv=CompassDriver()
+    drv=DistoDriver()
     drv.init()
 
     #MAIN

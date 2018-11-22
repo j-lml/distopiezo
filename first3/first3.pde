@@ -20,7 +20,9 @@ void setup() {
   //ZMQ
   ZMQ.Context context = ZMQ.context(1);
   subscriber = context.socket(ZMQ.SUB);
-  subscriber.connect("tcp://127.0.0.1:8000");
+  subscriber.connect("tcp://127.0.0.1:8001");
+  subscriber.connect("tcp://127.0.0.1:8002");
+  subscriber.connect("tcp://127.0.0.1:8003");
   String filter="STS";
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
@@ -105,10 +107,23 @@ void draw() {
     String _machine=items[2];
     String _element=items[3];
     String _status=items[4];   
+    String _p1="";
+    String _p2="";
+    String _p3="";
     
     if (_type.equals("COMPASS")) {
-        String _p1=items[5];
+        _p1=items[5];
         disto.setAngle( float(_p1) );
+    }
+    
+    if (_type.equals("ACCELERO")) {
+      _p1=items[5];  //x
+      _p2=items[6];  //y
+      _p3=items[7];  //z    
+      disto.setInc( float(_p2) );
+    }
+    
+    if (_type.equals("DISTO")) {        
     }
     
     

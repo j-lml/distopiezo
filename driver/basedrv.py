@@ -13,26 +13,47 @@ from logging.handlers import TimedRotatingFileHandler
 #pip install
 
 
-class BaseDriver:
+class BaseDriver(object):
 
-    context=None
-    socket=None
     logger=None
+
+    _context=None
+    _pub_socket=None
+    _status="ON"
 
     PORT = "8000"
     TYPE_DRV = "GENERIC"
     MACHINE_NAME = "M1"
     APP_NAME = "GENERIC_DRV"
     HEADER = ""
+    HEARTBEAT=5
 
 
     def __init__(self):
         self.HEADER= self.TYPE_DRV + ";" + self.MACHINE_NAME + ";" + self.APP_NAME
         pass
 
-    def name(self):
-        return self.HEADER
+    #--------------------------------------
+    #   PROPIEDADES
+    #--------------------------------------
+    @property
+    def status(self):
+        return self._status;
 
+    @status.setter
+    def status(self, estado):
+        if estado not in ["ON", "OFF", "ERR"]:
+            self.logger.debug("estado ["+ estado +"] - no valido")
+            return
+
+        if (estado != self.status):
+            self._status=estado
+            self.send_sts()
+
+
+    #--------------------------------------
+    #   METODOS INIT
+    #--------------------------------------
     def logger_init(self):
         #logger
         path = self.APP_NAME.lower() + ".log"
@@ -63,7 +84,6 @@ class BaseDriver:
         self.logger.info("driver: " + self.TYPE_DRV )
         self.logger.info("log file: " + path )
 
-        return self.logger
 
     def zmq_init(self):
         self.logger.debug( "zmq_init()" )
@@ -73,18 +93,20 @@ class BaseDriver:
     #        PORT =  sys.argv[1]
     #        int(PORT)
 
-        self.context = zmq.Context()
-        self.socket = self.context.socket(zmq.PUB)
-        self.socket.bind("tcp://*:%s" % self.PORT)
+        self._context = zmq.Context()
+        self._pub_socket = self._context.socket(zmq.PUB)
+        self._pub_socket.bind("tcp://*:%s" % self.PORT)
 
         self.logger.info( "bind: " + self.PORT )
 
-        return self.socket
 
     def send_msg(self,topic,message_data):
-        self.socket.send("%s %s" % (topic, message_data))
+        self._pub_socket.send("%s %s" % (topic, message_data))
         self.logger.info("" + "["+ topic +"]," + message_data )
 
+    #--------------------------------------
+    #   COMANDOS
+    #--------------------------------------
     def send_hello(self):
         # hi;type;machine_name;app_name;status;val1;val2;val3
         cad="HI"  + ";" + self.HEADER + ";"
@@ -103,9 +125,12 @@ class BaseDriver:
             messagedata = random.randrange(1,215) - 80
             print "%d %d" % (topic, messagedata)
             #socket.send("%d %d" % (topic, messagedata))
-            self.socket.send("%d %d" % (topic, messagedata))
+            self._pub_socket.send("%d %d" % (topic, messagedata))
             time.sleep(1)
 
+    #--------------------------------------
+    #   METODOS PUBLICOS
+    #--------------------------------------
     def init(self):
         #LOGGING
         self.logger_init()
@@ -113,7 +138,6 @@ class BaseDriver:
         self.zmq_init()
         #envia saludo para inicializar msg. se necesita pq se pierde el primero!
         self.send_hello()
-
 
     def exec_commands(self):
         self.logger.debug("exec_commands()")
@@ -146,6 +170,5 @@ class BaseDriver:
 if __name__ == "__main__":
     drv=BaseDriver()
 
-    drv.logger_init()
-    drv.name()
+    drv.init()
     drv.help()
