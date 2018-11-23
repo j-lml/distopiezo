@@ -39,11 +39,11 @@ class AcceleroDriver(BaseDriver):
         try:
             new_angle=float(giro)
         except:
-            self.logger.debug("girox ["+ giro +"] - no es float()")
+            self.logger.debug("girox ["+ str(giro) +"] - no es float()")
             return
 
         if new_angle < -90.0 or new_angle > 90:
-            self.logger.debug("girox ["+ giro +"] - no esta en rago -90,90")
+            self.logger.debug("girox ["+ str(giro) +"] - no esta en rago -90,90")
             return
 
         if (new_angle != self.girox):
@@ -59,11 +59,11 @@ class AcceleroDriver(BaseDriver):
         try:
             new_angle=float(giro)
         except:
-            self.logger.debug("giroy ["+ giro +"] - no es float()")
+            self.logger.debug("giroy ["+ str(giro) +"] - no es float()")
             return
 
         if new_angle < -90.0 or new_angle > 90:
-            self.logger.debug("giroy ["+ giro +"] - no esta en rago -90,90")
+            self.logger.debug("giroy ["+ str(giro) +"] - no esta en rago -90,90")
             return
 
         if (new_angle != self.giroy):
@@ -79,11 +79,11 @@ class AcceleroDriver(BaseDriver):
         try:
             new_angle=float(giro)
         except:
-            self.logger.debug("giroz ["+ giro +"] - no es float()")
+            self.logger.debug("giroz ["+ str(giro) +"] - no es float()")
             return
 
         if new_angle < -90.0 or new_angle > 90:
-            self.logger.debug("giroz ["+ giro +"] - no esta en rago -90,90")
+            self.logger.debug("giroz ["+ str(giro) +"] - no esta en rago -90,90")
             return
 
         if (new_angle != self.giroz):
@@ -99,19 +99,19 @@ class AcceleroDriver(BaseDriver):
         cad="STS"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(self.girox) + ";" + str(self.giroy) + ";" + str(self.giroz) + ";"
         self.send_msg( "STS" , cad)
 
-    def random(self):
-        self.logger.debug("random()")
-        count=0
-        while True:
-            count=count+1
-            if ( count % self.HEARTBEAT == 0):
-                count=0
-                a = random.randrange(0,18000)
-                a = float(a) / float(100)
-                a = a - 90
-                self.giroy = a
 
-            time.sleep(1)
+    def random(self,valor=180):
+        valor=int(valor)  #provoca excepcion si no es int
+        a = random.randrange(0,valor*100)
+        a = float(a) / float(100)
+        a= a - 90           #para que de en rango [-90,90]
+        self.girox = a
+
+    def constant(self,valor=0):
+        valor=int(valor)    #provoca excepcion si no es int
+        self.girox = valor
+        self.send_sts()     #manda siempre (aunque no cambie el valor)
+
 
     def help(self):
         BaseDriver.help(self)

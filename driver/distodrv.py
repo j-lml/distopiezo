@@ -51,21 +51,24 @@ class DistoDriver(BaseDriver):
         cad="STS"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(self.distance) + ";"
         self.send_msg( "STS" , cad)
 
-    def random(self):
-        self.logger.debug("random()")
-        count=0
-        while True:
-            count=count+1
-            if ( count % self.HEARTBEAT == 0):
-                count=0
-                a = random.randrange(0,5000)
-                self.distance=a
-
-            time.sleep(1)
-
     def help(self):
         BaseDriver.help(self)
         print("random:     ejecuta programa principal generando posiciones aleatorias")
+
+    def random(self,valor=50):
+        valor=int(valor)  #provoca excepcion si no es int
+        a = random.randrange(0,valor)
+        self.distance=a+20 #20 es valor minimo que puede devolver random
+
+    def constant(self,valor=50):
+        valor=int(valor)    #provoca excepcion si no es int
+        self.distance=valor
+        self.send_sts()     #manda siempre (aunque no cambie el valor)
+
+
+
+
+
 
 
 

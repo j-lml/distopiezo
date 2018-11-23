@@ -32,7 +32,7 @@ class Element {
 class PiezoDisto extends Element {
   
   
-  float _azimuth=0;  //FRENTE=0 IZQ=90 DCHA=-90 ATRAS=180
+  float _azimuth=0;  //FRENTE=0 IZQ=-90 DCHA=90 ATRAS=180
   float _polar=0;
   float _radio=20;
 
@@ -42,11 +42,11 @@ class PiezoDisto extends Element {
     cs=#FFFFFF;    
   }
   
-  void setAngle(float angle) {
+  void setAzimuth(float angle) {
     _azimuth=angle;
   }
   
-  void setInc(float angle) {
+  void setPolar(float angle) {
     _polar=angle;
   }
   
@@ -54,8 +54,7 @@ class PiezoDisto extends Element {
     _radio=distance;
   }
   
-  PVector getVector(float r) {
-    r=r/20;
+  PVector getVector(float r) {    
     //a partir de distacia r (y datos de orientacion del disto) => obtener Pvector con coordenadas
     float x1=r*cos(_azimuth)*sin(_polar);
     float y1=r*sin(_azimuth)*sin(_polar);
@@ -73,12 +72,12 @@ class PiezoDisto extends Element {
     pushMatrix();
        
       translate(x, y, z);    
-      rotateY(radians(_azimuth));
+      rotateZ(radians(_azimuth));
       rotateX(radians(_polar));
-      box(w/10,w/10,w);
+      box(w/10, w, w/10);
       
       stroke(192,192,192);
-      line(0,0,0,0,0,w+1);
+      line(0,0,0, 0,w+1,0);
     popMatrix();
   }
 }
@@ -166,13 +165,13 @@ class Point extends Element {
   void drawLines(float size){
     //X  - red
     stroke(cs);    
-    line(0-size/2,0,0,size/2,0,0);
+    line(0-size/2,0,0, size/2,0,0);
     //Y - green
     stroke(cs);
-    line(0,0-size/2,0,0,size/2,0);
+    line(0,0-size/2,0, 0,size/2,0);
     //Z - blue
     stroke(cs);
-    line(0,0,0-size/2,0,0,size/2);
+    line(0,0,0-size/2, 0,0,size/2);
   }
   
   void display() {

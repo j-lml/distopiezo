@@ -62,6 +62,8 @@ void setup() {
     
       
     disto.changeColor();
+    disto.setAzimuth(0);
+    disto.setPolar(0);
     
     camera.rotateX(0);
     camera.rotateY(0);
@@ -113,21 +115,21 @@ void draw() {
     
     if (_type.equals("COMPASS")) {
         _p1=items[5];
-        disto.setAngle( float(_p1) );
+        disto.setAzimuth( float(_p1) );
     }
     
     if (_type.equals("ACCELERO")) {
       _p1=items[5];  //x
       _p2=items[6];  //y
       _p3=items[7];  //z    
-      disto.setInc( float(_p2) );
+      disto.setPolar( float(_p1) );
     }
     
     if (_type.equals("DISTO")) {
        _p1=items[5];  //r
        PVector p=disto.getVector( float(_p1) );
        
-       Point point=new Point( p.x, p.y, p.z);
+       Point point=new Point( disto.x + p.x, disto.y + p.y, disto.z + p.z);
        point.display();
        points.add( point );
        

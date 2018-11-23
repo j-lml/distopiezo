@@ -54,19 +54,17 @@ class CompassDriver(BaseDriver):
         cad="STS"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(self.angle) + ";"
         self.send_msg( "STS" , cad)
 
-    def random(self):
-        self.logger.debug("random()")
-        count=0
-        while True:
-            count=count+1
-            if ( count % self.HEARTBEAT == 0):
-                count=0
-                a = random.randrange(0,36000)
-                a = float(a) / float(100)
-                self.angle=a
+    def random(self,valor=360):
+        valor=int(valor)  #provoca excepcion si no es int
+        a = random.randrange(0,valor*100)
+        a = float(a) / float(100)
+        self.angle=a
 
-            time.sleep(1)
-
+    def constant(self,valor=0):
+        valor=int(valor)    #provoca excepcion si no es int
+        self.angle=valor
+        self.send_sts()     #manda siempre (aunque no cambie el valor)
+    
     def help(self):
         BaseDriver.help(self)
         print("random:     ejecuta programa principal generando posiciones aleatorias")

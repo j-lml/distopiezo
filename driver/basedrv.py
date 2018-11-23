@@ -26,7 +26,7 @@ class BaseDriver(object):
     MACHINE_NAME = "M1"
     APP_NAME = "GENERIC_DRV"
     HEADER = ""
-    HEARTBEAT=5
+    HEARTBEAT=3
 
 
     def __init__(self):
@@ -128,6 +128,30 @@ class BaseDriver(object):
             self._pub_socket.send("%d %d" % (topic, messagedata))
             time.sleep(1)
 
+    def run(self,mode):
+        #modo   run:        consigue ejecutar la funcion de siguiete param
+        #ej:    run:help
+        #ej:    run:random,3
+        self.logger.debug("run(mode)")
+        count=0
+        while True:
+            count=count+1
+            if ( count % self.HEARTBEAT == 0):
+                items=mode.split(',')
+                func=None
+                print items
+                if (len(items)==1):
+                    func = getattr(self, items[0] )
+                    func()
+                if (len(items)==2):
+                    func = getattr(self, items[0] )
+                    func(items[1])
+
+                #    self.error("run(mode) - no existe modo: " + mode)
+
+            time.sleep(1)
+
+
     #--------------------------------------
     #   METODOS PUBLICOS
     #--------------------------------------
@@ -138,6 +162,8 @@ class BaseDriver(object):
         self.zmq_init()
         #envia saludo para inicializar msg. se necesita pq se pierde el primero!
         self.send_hello()
+
+
 
     def exec_commands(self):
         self.logger.debug("exec_commands()")
@@ -154,12 +180,15 @@ class BaseDriver(object):
             #   a) si no tiene parametros: ej app run => run()
             #   b) si tiene un param: ej app test:connection => test("connection")
             items=params[1].split(':')
+            print(items)
             if (len(items)==1):
                 #self.globals()[items[0]]()
                 func = getattr(self, items[0] )
                 func()
             if (len(items)==2):
-                self.globals()[items[0]](items[1])
+                #self.globals()[items[0]](items[1])
+                func = getattr(self, items[0] )
+                func(items[1])
         except Exception as e:
             print getattr(e, 'message', repr(e))
             self.help()
