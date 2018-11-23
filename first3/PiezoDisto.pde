@@ -56,9 +56,22 @@ class PiezoDisto extends Element {
   
   PVector getVector(float r) {    
     //a partir de distacia r (y datos de orientacion del disto) => obtener Pvector con coordenadas
-    float x1=r*cos(_azimuth)*sin(_polar);
-    float y1=r*sin(_azimuth)*sin(_polar);
-    float z1=r*cos(_polar);
+    //float x1=r*cos(_azimuth)*sin(_polar);
+    //float y1=r*sin(_azimuth)*sin(_polar);
+    //float z1=r*cos(_polar);
+    
+    //float x1=r*cos(_azimuth)*sin(_polar);    
+    //float y1=r*cos(_polar);
+    //float z1=r*sin(_azimuth)*sin(_polar);
+    
+    float y1=r*cos(_polar);
+    float x1=r*sin(_azimuth)*sin(_azimuth);
+    float z1=r*cos(_azimuth)*sin(_polar);
+    
+    println(_azimuth,_polar,r);
+    println(x1,y1,z1);
+    println("-------");
+    
     
     return new PVector(x1,y1,z1);
   }

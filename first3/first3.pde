@@ -128,8 +128,10 @@ void draw() {
     if (_type.equals("DISTO")) {
        _p1=items[5];  //r
        PVector p=disto.getVector( float(_p1) );
+       println(p.x, p.y, p.z);
        
-       Point point=new Point( disto.x + p.x, disto.y + p.y, disto.z + p.z);
+       //Point point=new Point( disto.x + p.x, disto.y + p.y, disto.z + p.z);
+       Point point=new Point( p.x, p.y, p.z);
        point.display();
        points.add( point );
        

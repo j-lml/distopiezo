@@ -139,7 +139,6 @@ class BaseDriver(object):
             if ( count % self.HEARTBEAT == 0):
                 items=mode.split(',')
                 func=None
-                print items
                 if (len(items)==1):
                     func = getattr(self, items[0] )
                     func()
@@ -179,8 +178,7 @@ class BaseDriver(object):
             #ejecuta la funcion correspondiente
             #   a) si no tiene parametros: ej app run => run()
             #   b) si tiene un param: ej app test:connection => test("connection")
-            items=params[1].split(':')
-            print(items)
+            items=params[1].split(':')            
             if (len(items)==1):
                 #self.globals()[items[0]]()
                 func = getattr(self, items[0] )
