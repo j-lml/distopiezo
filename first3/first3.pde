@@ -48,27 +48,45 @@ void setup() {
       +15 + (int)random(30),
      10);
       
-    world= new World(0,0,0,50);
+    //crea mundo 
+    world= new World(0,0,0,50);    
+    axis= new Axis(0,0,0,10);
     
-    axis= new Axis(0,0,0,10);    
+    //crea punto de ref
     p= new Point(-1,-1,-1);
+    p.setReference(0,0,0);
+    points.add(p);
     
+    /*
     for (int i=0; i<1; i++) {
       points.add( new Point( (int)random(1300),
       (int)random(1300),
       (int)random(1300) ) );    
-    }
+    } */
     
     
       
     disto.changeColor();
     disto.setAzimuth(0);
-    disto.setPolar(0);
+    disto.setPolar(0);    
+    
+    p=new Point( 1, 1, 1 );
+    p.setReference(0,0,0);
+    points.add( p );
+    p=new Point( 2, 2, 2 );
+    p.setReference(2,2,2);
+    points.add( p );
+    
+    p=disto.getCartesianPoint(0,12,0);
+    points.add( p );
+    p=disto.getPolarPoint(13,0,-0);
+    points.add( p );
+    
+    
     
     camera.rotateX(0);
     camera.rotateY(0);
-    camera.rotateZ(0);
-    
+    camera.rotateZ(0);    
 
   //noLoop();
 
@@ -84,6 +102,12 @@ void draw() {
   
   //set the background to black
   background(0);   
+  
+  //IMP: left handed = processing  , right handed = opengl  
+  //
+  //https://www.evl.uic.edu/ralph/508S98/coordinates.html
+  //https://forum.processing.org/one/topic/righ-handed-co-ordinate-system.html
+  
   
   //world
   world.display();
@@ -126,15 +150,8 @@ void draw() {
     }
     
     if (_type.equals("DISTO")) {
-       _p1=items[5];  //r
-       PVector p=disto.getVector( float(_p1) );
-       println(p.x, p.y, p.z);
-       
-       //Point point=new Point( disto.x + p.x, disto.y + p.y, disto.z + p.z);
-       Point point=new Point( p.x, p.y, p.z);
-       point.display();
-       points.add( point );
-       
+       _p1=items[5];  //r       
+       disto.addPoint( float(_p1) );
     }
     
     
