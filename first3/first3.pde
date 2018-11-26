@@ -24,7 +24,7 @@ void setup() {
   subscriber.connect("tcp://127.0.0.1:8002");  //accel
   subscriber.connect("tcp://127.0.0.1:8003");  //disto
   subscriber.connect("tcp://127.0.0.1:8005");  //simulador
-  String filter="STS";
+  String filter="";
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
   
@@ -127,7 +127,7 @@ void draw() {
   String rcv = subscriber.recvStr();
   if (rcv != null) {
     println(rcv);
-    String[] items = split(rcv, ';');
+    String[] items = split(rcv, ";");
     
     String _command=items[0];
     String _type=items[1];
@@ -137,30 +137,26 @@ void draw() {
     String _p1="";
     String _p2="";
     String _p3="";
-    
-    println(_command);
-    println(_type);
-    
-    if (_command.equals("STS") && _type.equals("COMPASS") ) {
+ 
+    if (_command.contains("STS") && _type.equals("COMPASS") ) {
         _p1=items[5];
         disto.setAzimuth( float(_p1) );
     }
     
-    if (_command.equals("STS") && _type.equals("ACCELERO")) {
+    if (_command.contains("STS") && _type.equals("ACCELERO")) {
       _p1=items[5];  //x
       _p2=items[6];  //y
       _p3=items[7];  //z    
       disto.setPolar( float(_p1) );
     }
     
-    if (_command.equals("STS") && _type.equals("DISTO")) {
+    if (_command.contains("STS") && _type.equals("DISTO")) {
        _p1=items[5];  //r       
        disto.addPoint( float(_p1) );
     }
     
     
-    if (_command.equals("STS PCART") && _type.equals("SIMUL")) {
-      println("pcart");
+    if (_command.contains("PCART") && _type.equals("SIMUL")) {      
        _p1=items[5];  //rho. dist
        _p2=items[6];  //theta. incli
        _p3=items[7];  //phi. angulo
@@ -169,13 +165,25 @@ void draw() {
     }
     
     
-    if (_command.equals("STS PPOLAR") && _type.equals("SIMUL")) {
+    if (_command.contains("PPOLAR") && _type.equals("SIMUL")) {
        _p1=items[5];  //rho. dist
        _p2=items[6];  //theta. incli
        _p3=items[7];  //phi. angulo
        Point point=disto.getPolarPoint(float(_p1),float(_p2),float(_p3));
        disto.addPoint(point);       
     }
+    
+      /*  
+    if (_command.contains("STATION") && _type.equals("SIMUL")) {
+      println(rcv);
+      _p1=items[5];  //x
+      _p2=items[6];  //y
+      _p3=items[7];  //z
+      
+      disto=new PiezoDisto(float(_p1),float(_p2),float(_p3),10);
+      disto.setReference(0,0,0);             
+    }
+    */
     
     
     

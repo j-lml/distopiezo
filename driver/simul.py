@@ -39,6 +39,12 @@ class SimulDriver(BaseDriver):
         cad="PCART"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
         self.send_msg( "STS" , cad)
 
+    def send_station(self,x,y,z):
+        # sts;type;machine_name;app_name;status;val1;val2;val3
+        #cad="P_POLAR"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
+        cad="STATION"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
+        self.send_msg( "STS" , cad)
+
     def help(self):
         BaseDriver.help(self)
         print("random:     ejecuta programa principal generando posiciones aleatorias")
@@ -52,6 +58,36 @@ class SimulDriver(BaseDriver):
         _y = random.randrange(0,valor)
         _z = random.randrange(0,valor)
         self.send_point()
+
+    def file(self,filename="output_x_y_z.txt"):
+        global _x;
+        global _y;
+        global _z;
+
+        coords=filename[:-4]        #borra .txt
+        items=coords.split("_")     #x,y,z
+        if (len(items)!=4):
+            print("faltan elementos de posicion en nombre " + filename)
+
+
+        #self.send_station(float(items[1]), float(items[2]), float(items[3]) )
+
+
+
+        with open(filename) as f:
+            #content = f.readlines()
+            # you may also want to remove whitespace characters like `\n` at the end of each line
+            #content = [x.strip() for x in content]
+            for line in f:
+                elems=line.rstrip().split(';')
+                if len(elems) == 3:
+                    _x=10.0*float(elems[0]);
+                    _y=10.0*float(elems[1]);
+                    _z=10.0*float(elems[2]);
+                    self.send_point()
+
+            exit(0)
+
 
 
     def constant(self,valor=50):

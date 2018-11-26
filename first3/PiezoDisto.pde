@@ -72,8 +72,7 @@ class PiezoDisto extends Element {
     _points.add(p);
   }
   
-  void addPoint(Point p) {  
-    println("addPoint");
+  void addPoint(Point p) {
     _points.add(p);
   }
   
@@ -137,9 +136,11 @@ class Point extends Element {
   
   int _transp=255;
   void drawTrace() {
-    if (_transp>0) {_transp-=5;}
-    stroke(175,200,200,_transp);
-    line(0,0,0, x,y,z);
+    if (_transp>0) {
+      _transp-=5;
+      stroke(175,200,200,_transp);
+      line(0,0,0, x,y,z);
+    }
   }
   
   void display() {

@@ -11,7 +11,9 @@ from logging.handlers import TimedRotatingFileHandler
 
 #pip install zmq
 #pip install
-
+#pip install numpy
+#pip install numpy-stl
+#eliminar pip unistall stl si error)
 
 class BaseDriver(object):
 
@@ -178,7 +180,7 @@ class BaseDriver(object):
             #ejecuta la funcion correspondiente
             #   a) si no tiene parametros: ej app run => run()
             #   b) si tiene un param: ej app test:connection => test("connection")
-            items=params[1].split(':')            
+            items=params[1].split(':')
             if (len(items)==1):
                 #self.globals()[items[0]]()
                 func = getattr(self, items[0] )
