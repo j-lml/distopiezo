@@ -20,9 +20,10 @@ void setup() {
   //ZMQ
   ZMQ.Context context = ZMQ.context(1);
   subscriber = context.socket(ZMQ.SUB);
-  subscriber.connect("tcp://127.0.0.1:8001");
-  subscriber.connect("tcp://127.0.0.1:8002");
-  subscriber.connect("tcp://127.0.0.1:8003");
+  subscriber.connect("tcp://127.0.0.1:8001");  //compass
+  subscriber.connect("tcp://127.0.0.1:8002");  //accel
+  subscriber.connect("tcp://127.0.0.1:8003");  //disto
+  subscriber.connect("tcp://127.0.0.1:8005");  //simulador
   String filter="STS";
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
@@ -137,21 +138,43 @@ void draw() {
     String _p2="";
     String _p3="";
     
-    if (_type.equals("COMPASS")) {
+    println(_command);
+    println(_type);
+    
+    if (_command.equals("STS") && _type.equals("COMPASS") ) {
         _p1=items[5];
         disto.setAzimuth( float(_p1) );
     }
     
-    if (_type.equals("ACCELERO")) {
+    if (_command.equals("STS") && _type.equals("ACCELERO")) {
       _p1=items[5];  //x
       _p2=items[6];  //y
       _p3=items[7];  //z    
       disto.setPolar( float(_p1) );
     }
     
-    if (_type.equals("DISTO")) {
+    if (_command.equals("STS") && _type.equals("DISTO")) {
        _p1=items[5];  //r       
        disto.addPoint( float(_p1) );
+    }
+    
+    
+    if (_command.equals("STS PCART") && _type.equals("SIMUL")) {
+      println("pcart");
+       _p1=items[5];  //rho. dist
+       _p2=items[6];  //theta. incli
+       _p3=items[7];  //phi. angulo
+       Point point=disto.getCartesianPoint(float(_p1),float(_p2),float(_p3));
+       disto.addPoint(point);       
+    }
+    
+    
+    if (_command.equals("STS PPOLAR") && _type.equals("SIMUL")) {
+       _p1=items[5];  //rho. dist
+       _p2=items[6];  //theta. incli
+       _p3=items[7];  //phi. angulo
+       Point point=disto.getPolarPoint(float(_p1),float(_p2),float(_p3));
+       disto.addPoint(point);       
     }
     
     

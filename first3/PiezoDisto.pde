@@ -43,16 +43,14 @@ class PiezoDisto extends Element {
     //theta: inclinacion
     //phi:   angulo
     
-    println("r,t,p "+ rho, theta, phi);
     
     //ajustes para que sea como en pantalla
-    theta=-1.0*theta+90;
+    theta=-1.0*theta+90; //convierte a 0-180 (90 => 0, 0 => 90, -90 => 180)
     phi=phi+90;
     
     
     theta=radians(theta);
     phi=radians(phi);    
-    println("r,tr,pr "+ rho, theta, phi);
     
     
     x = rho * sin(theta) * cos(phi);
@@ -71,6 +69,11 @@ class PiezoDisto extends Element {
   
   void addPoint(float rho) {
     Point p=this.getPolarPoint(rho);
+    _points.add(p);
+  }
+  
+  void addPoint(Point p) {  
+    println("addPoint");
     _points.add(p);
   }
   
