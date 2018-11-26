@@ -132,6 +132,13 @@ class Point extends Element {
     line(0,0,0-size/2, 0,0,size/2);
   }
   
+  int _transp=255;
+  void drawTrace() {
+    if (_transp>0) {_transp-=5;}
+    stroke(175,200,200,_transp);
+    line(0,0,0, x,y,z);
+  }
+  
   void display() {
       fill(cf);
       stroke(cs);
@@ -142,6 +149,7 @@ class Point extends Element {
       changeCoord();       
       
       translate(ox, oy, oz); 
+      drawTrace();
       
       pushMatrix();      
       translate(x, y, z);    
