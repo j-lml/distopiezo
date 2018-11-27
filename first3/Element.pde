@@ -28,6 +28,10 @@ class Element {
      cs=#FFFFFF;
   }
   
+  void setColor(color c) {
+    this.cs=c;
+  }
+  
   void changeCoord() {
     scale(-1, 1, 1);
   }

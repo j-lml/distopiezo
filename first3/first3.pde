@@ -156,7 +156,7 @@ void draw() {
   
   //ZMQ
    //Msg msg = ZMQ.recv(subscriber, ZMQ.ZMQ_DONTWAIT);
-  String topic=null;
+  String topic=null  ;
   String rcv=null;
   
   topic= subscriber.recvStr();

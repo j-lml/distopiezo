@@ -69,10 +69,12 @@ class PiezoDisto extends Element {
   
   void addPoint(float rho) {
     Point p=this.getPolarPoint(rho);
+    p.setColor( color(cf) );
     _points.add(p);
   }
   
   void addPoint(Point p) {
+    p.setColor( color(cf) );
     _points.add(p);
   }
   
