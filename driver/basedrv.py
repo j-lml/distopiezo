@@ -21,6 +21,7 @@ class BaseDriver(object):
 
     _context=None
     _pub_socket=None
+    _sub_socket=None
     _status="ON"
 
     PORT = "8000"
@@ -86,24 +87,43 @@ class BaseDriver(object):
         self.logger.info("driver: " + self.TYPE_DRV )
         self.logger.info("log file: " + path )
 
-
+    def zmq_pub_port(self):
+        return self.PORT
+    def zmq_sub_port(self):
+        return str( int(self.PORT) + 1000 )
     def zmq_init(self):
         self.logger.debug( "zmq_init()" )
         self.logger.info( "zmq: " + zmq.pyzmq_version() )
 
-    #    if len(sys.argv) > 1:
-    #        PORT =  sys.argv[1]
-    #        int(PORT)
 
+        #contexto
         self._context = zmq.Context()
+        #pub socket
         self._pub_socket = self._context.socket(zmq.PUB)
-        self._pub_socket.bind("tcp://*:%s" % self.PORT)
+        self._pub_socket.bind("tcp://*:%s" % self.zmq_pub_port() )
+        #sub socket
+        self._sub_socket = self._context.socket(zmq.SUB)
+        self._sub_socket.connect("tcp://localhost:%s" % self.zmq_sub_port())
 
-        self.logger.info( "bind: " + self.PORT )
+        #subscribir a tema
+        filter = ""
+        # Python 2 - ascii bytes to unicode str
+        if isinstance(filter, bytes):
+            filter = filter.decode('ascii')
+        self._sub_socket.setsockopt_string(zmq.SUBSCRIBE, filter)
+
+
+        self.logger.info( "pub  bind: " + self.zmq_pub_port() )
+        self.logger.info( "sub bind: " + self.zmq_sub_port() )
+
 
 
     def send_msg(self,topic,message_data):
-        self._pub_socket.send("%s %s" % (topic, message_data))
+        #ref: http://zguide.zeromq.org/php:chapter2#Pub-Sub-Message-Envelopes
+        #topic y msg en mismo nivel:
+        #self._pub_socket.send("%s %s" % (topic, message_data))
+        #para separar topic de msg:
+        self._pub_socket.send_multipart([topic, message_data])
         self.logger.info("" + "["+ topic +"]," + message_data )
 
     #--------------------------------------

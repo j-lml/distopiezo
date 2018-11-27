@@ -110,7 +110,7 @@ class GeneratorDriver(BaseDriver):
     #   COMANDOS
     #--------------------------------------
 
-    #ej: python generator.py sphere:turing.stl,1,2,1
+    #ej: python generator.py cloud:turing.stl,sphere,1,1,1
     def cloud(self, params='turing.stl,sphere,1,1,1)'):
         start_time = time.time()
 

@@ -30,12 +30,35 @@ class SimulDriver(BaseDriver):
     #--------------------------------------
 
     #--------------------------------------
-    #   COMANDOS
+    #   COMANDOS SUB
+    #--------------------------------------
+    def wait_sendfile(self):
+        received=False
+        command="SENDFILE"
+        self.logger.info("esperando comando: " + command)
+        while not received:
+            try:
+                #msg = self._sub_socket.recv_string()
+                topic = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
+                msg = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
+                self.logger.info("comando topic: " + topic)
+                self.logger.info("comando rcv: " + msg)
+                items = msg.split(';')
+                if items[0]==command:
+                    received=True
+            except zmq.Again as e:
+                self.logger.debug("No message received yet")
+
+            time.sleep(1)
+
+
+    #--------------------------------------
+    #   COMANDOS PUB
     #--------------------------------------
 
     def send_point(self):
         # sts;type;machine_name;app_name;status;val1;val2;val3
-        #cad="P_POLAR"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
+        #cad="PPOLAR"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
         cad="PCART"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
         self.send_msg( "STS" , cad)
 
@@ -69,9 +92,8 @@ class SimulDriver(BaseDriver):
         if (len(items)!=4):
             print("faltan elementos de posicion en nombre " + filename)
 
-
-        #self.send_station(float(items[1]), float(items[2]), float(items[3]) )
-
+        self.wait_sendfile()
+        self.send_station(10.0*float(items[1]), 10.0*float(items[2]), 10.0*float(items[3]) )
 
 
         with open(filename) as f:

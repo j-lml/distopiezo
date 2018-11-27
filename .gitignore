@@ -8,4 +8,4 @@ application.macosx
 **/*.pyc
 **/*.log
 **/*.log.*
-
+**/output_*.txt

@@ -8,6 +8,7 @@ World world;
 Axis axis;
 Point p; 
 ZMQ.Socket subscriber;
+ZMQ.Socket publisher;
 
 ArrayList<Point> points = new ArrayList<Point>();
 float y = 100;
@@ -24,9 +25,14 @@ void setup() {
   subscriber.connect("tcp://127.0.0.1:8002");  //accel
   subscriber.connect("tcp://127.0.0.1:8003");  //disto
   subscriber.connect("tcp://127.0.0.1:8005");  //simulador
-  String filter="";
+  String filter="STS";
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
+  
+  publisher = context.socket(ZMQ.PUB);
+  publisher.bind("tcp://127.0.0.1:9005");  //simulator commands
+  delay(100);
+ 
   
   //SCREEN
   size(640, 480, P3D);
@@ -94,12 +100,21 @@ void setup() {
 }
 
 
+long _oldtime=0;
 
 // The statements in draw() are run until the
 // program is stopped. Each statement is run in
 // sequence and after the last line is read, the first
 // line is run again.
-void draw() {  
+void draw() {
+  
+  //ejecuta cada 5 segundos
+  long _time=millis();
+  if (_time - 5000 > _oldtime) {
+      _oldtime=_time;
+      publisher.sendMore("COMMAND".getBytes());
+      publisher.send("SENDFILE".getBytes());
+  } 
   
   //set the background to black
   background(0);   
@@ -127,17 +142,26 @@ void draw() {
   String rcv = subscriber.recvStr();
   if (rcv != null) {
     println(rcv);
-    String[] items = split(rcv, ";");
+    String[] items = split(rcv, ";");    
     
     String _command=items[0];
-    String _type=items[1];
-    String _machine=items[2];
-    String _element=items[3];
-    String _status=items[4];   
+    String _type="";
+    String _machine="";
+    String _element="";
+    String _status="";   
     String _p1="";
     String _p2="";
     String _p3="";
  
+    if (items.length >= 5) {
+       _command=items[0];
+       _type=items[1];
+       _machine=items[2];
+       _element=items[3];
+       _status=items[4];
+    }
+    
+    
     if (_command.contains("STS") && _type.equals("COMPASS") ) {
         _p1=items[5];
         disto.setAzimuth( float(_p1) );
