@@ -94,7 +94,8 @@ class SimulDriver(BaseDriver):
 
         self.wait_sendfile()
         self.send_station(10.0*float(items[1]), 10.0*float(items[2]), 10.0*float(items[3]) )
-
+        time.sleep(1)
+        exit()
 
         with open(filename) as f:
             #content = f.readlines()

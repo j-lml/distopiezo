@@ -106,7 +106,7 @@ class BaseDriver(object):
         self._sub_socket.connect("tcp://localhost:%s" % self.zmq_sub_port())
 
         #subscribir a tema
-        filter = ""
+        filter = "COMMAND"
         # Python 2 - ascii bytes to unicode str
         if isinstance(filter, bytes):
             filter = filter.decode('ascii')

@@ -29,6 +29,7 @@ void setup() {
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
   
+  //realiza peticiones al simulador
   publisher = context.socket(ZMQ.PUB);
   publisher.bind("tcp://127.0.0.1:9005");  //simulator commands
   delay(100);
