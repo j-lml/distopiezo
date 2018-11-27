@@ -140,7 +140,9 @@ void draw() {
   
   //ZMQ
    //Msg msg = ZMQ.recv(subscriber, ZMQ.ZMQ_DONTWAIT);
+  String topic = subscriber.recvStr();
   String rcv = subscriber.recvStr();
+  
   if (rcv != null) {
     println(rcv);
     String[] items = split(rcv, ";");    
