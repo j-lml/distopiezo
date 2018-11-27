@@ -28,17 +28,20 @@ class BaseDriver(object):
     TYPE_DRV = "GENERIC"
     MACHINE_NAME = "M1"
     APP_NAME = "GENERIC_DRV"
-    HEADER = ""
+
     HEARTBEAT=3
 
 
     def __init__(self):
-        self.HEADER= self.TYPE_DRV + ";" + self.MACHINE_NAME + ";" + self.APP_NAME
         pass
 
     #--------------------------------------
     #   PROPIEDADES
     #--------------------------------------
+    @property
+    def header(self):
+        return self.TYPE_DRV + ";" + self.MACHINE_NAME + ";" + self.APP_NAME
+
     @property
     def status(self):
         return self._status;
@@ -131,7 +134,7 @@ class BaseDriver(object):
     #--------------------------------------
     def send_hello(self):
         # hi;type;machine_name;app_name;status;val1;val2;val3
-        cad="HI"  + ";" + self.HEADER + ";"
+        cad="HI"  + ";" + self.header + ";"
         self.send_msg( "HI" , cad)
 
     def help(self):

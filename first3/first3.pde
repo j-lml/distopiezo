@@ -1,14 +1,19 @@
 import peasy.*;
 import org.zeromq.ZMQ;
- 
+import java.util.Map; 
 
 PeasyCam camera;
-PiezoDisto disto;
 World world;
 Axis axis;
 Point p; 
 ZMQ.Socket subscriber;
 ZMQ.Socket publisher;
+
+
+  
+
+HashMap<String,PiezoDisto> distos = new HashMap<String,PiezoDisto>();
+
 
 ArrayList<Point> points = new ArrayList<Point>();
 float y = 100;
@@ -49,12 +54,16 @@ void setup() {
     camera.setMinimumDistance(0);
     camera.setMaximumDistance(500);
 
-
+    PiezoDisto disto;
     disto=new PiezoDisto(
       +15 + (int)random(30),
       +15 + (int)random(30),
       +15 + (int)random(30),
-     10);
+     10);             
+    disto.changeColor();
+    disto.setAzimuth(0);
+    disto.setPolar(0); 
+    distos.put("PROCESSING",disto);
       
     //crea mundo 
     world= new World(0,0,0,50);    
@@ -73,10 +82,7 @@ void setup() {
     } */
     
     
-      
-    disto.changeColor();
-    disto.setAzimuth(0);
-    disto.setPolar(0);    
+   
     
     p=new Point( 1, 1, 1 );
     p.setReference(0,0,0);
@@ -128,20 +134,35 @@ void draw() {
   
   //world
   world.display();
-  disto.display();  
+  
+  //pinta distos
+  //Using an enhanced loop to iterate over each entry
+  for (Map.Entry me : distos.entrySet()) {
+    //print(me.getKey() + " is ");
+    //println(me.getValue());
+    PiezoDisto d;
+    d=(PiezoDisto) me.getValue();
+    d.display();
+  }
+  
+  //ejes
   axis.display();
   
   //puntos
-  p.display(); 
-  
+  p.display();   
   for (Point part : points) {
     part.display();
   }
   
   //ZMQ
    //Msg msg = ZMQ.recv(subscriber, ZMQ.ZMQ_DONTWAIT);
-  String topic = subscriber.recvStr();
-  String rcv = subscriber.recvStr();
+  String topic=null;
+  String rcv=null;
+  
+  topic= subscriber.recvStr();
+  if (topic != null) {
+    rcv= subscriber.recvStr();
+  }
   
   if (rcv != null) {
     println(rcv);
@@ -164,26 +185,49 @@ void draw() {
        _status=items[4];
     }
     
+        
+    if (_command.contains("STATION") && _type.equals("SIMUL")) {     
+      _p1=items[5];  //x
+      _p2=items[6];  //y
+      _p3=items[7];  //z
+      
+      PiezoDisto d=new PiezoDisto(float(_p1),float(_p2),float(_p3),10);
+      d.setReference(0,0,0);
+      d.setName(_element.toUpperCase());
+      d.changeColor();
+      distos.put(d.getName(), d);
+    }
     
-    if (_command.contains("STS") && _type.equals("COMPASS") ) {
+    
+    //-- OBTIENE EL DISTO AL QUE SE REFIERE EL COMANDO -------
+    PiezoDisto disto;
+    disto=distos.get( _element.toUpperCase() );    
+    if (disto==null) {
+        disto=new PiezoDisto(float(_p1),float(_p2),float(_p3),10);
+        disto.setReference(0,0,0);
+        disto.setName(_element.toUpperCase());      
+    }
+    
+    //-- COMANDOS DE DISPOSITIVO ------------------------------
+    if (_command.equals("STS") && _type.equals("COMPASS") ) {
         _p1=items[5];
         disto.setAzimuth( float(_p1) );
     }
     
-    if (_command.contains("STS") && _type.equals("ACCELERO")) {
+    if (_command.equals("STS") && _type.equals("ACCELERO")) {
       _p1=items[5];  //x
       _p2=items[6];  //y
       _p3=items[7];  //z    
       disto.setPolar( float(_p1) );
     }
     
-    if (_command.contains("STS") && _type.equals("DISTO")) {
+    if (_command.equals("STS") && _type.equals("DISTO")) {
        _p1=items[5];  //r       
        disto.addPoint( float(_p1) );
     }
     
-    
-    if (_command.contains("PCART") && _type.equals("SIMUL")) {      
+    //-- COMANDOS DE SIMULADOR ---------------------------------
+    if (_command.equals("PCART") && _type.equals("SIMUL")) {      
        _p1=items[5];  //rho. dist
        _p2=items[6];  //theta. incli
        _p3=items[7];  //phi. angulo
@@ -192,7 +236,7 @@ void draw() {
     }
     
     
-    if (_command.contains("PPOLAR") && _type.equals("SIMUL")) {
+    if (_command.equals("PPOLAR") && _type.equals("SIMUL")) {
        _p1=items[5];  //rho. dist
        _p2=items[6];  //theta. incli
        _p3=items[7];  //phi. angulo
@@ -200,17 +244,8 @@ void draw() {
        disto.addPoint(point);       
     }
     
-      /*  
-    if (_command.contains("STATION") && _type.equals("SIMUL")) {
-      println(rcv);
-      _p1=items[5];  //x
-      _p2=items[6];  //y
-      _p3=items[7];  //z
-      
-      disto=new PiezoDisto(float(_p1),float(_p2),float(_p3),10);
-      disto.setReference(0,0,0);             
-    }
-    */
+
+    
     
     
     

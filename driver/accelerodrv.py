@@ -96,7 +96,7 @@ class AcceleroDriver(BaseDriver):
     #--------------------------------------
     def send_sts(self):
         # sts;type;machine_name;app_name;status;val1;val2;val3
-        cad="STS"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(self.girox) + ";" + str(self.giroy) + ";" + str(self.giroz) + ";"
+        cad="STS"  + ";" + self.header + ";" + str(self.status) + ";" + str(self.girox) + ";" + str(self.giroy) + ";" + str(self.giroz) + ";"
         self.send_msg( "STS" , cad)
 
 

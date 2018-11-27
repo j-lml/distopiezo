@@ -6,6 +6,7 @@ import random
 import sys
 import time
 import logging
+import string
 
 from logging.handlers import TimedRotatingFileHandler
 
@@ -28,6 +29,8 @@ class SimulDriver(BaseDriver):
     #--------------------------------------
     #   PROPIEDADES
     #--------------------------------------
+    def set_random_name(self):
+        self.APP_NAME='DISTO'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
     #--------------------------------------
     #   COMANDOS SUB
@@ -58,14 +61,15 @@ class SimulDriver(BaseDriver):
 
     def send_point(self):
         # sts;type;machine_name;app_name;status;val1;val2;val3
-        #cad="PPOLAR"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
-        cad="PCART"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
+        #cad="PPOLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
+        cad="PCART"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
         self.send_msg( "STS" , cad)
 
     def send_station(self,x,y,z):
         # sts;type;machine_name;app_name;status;val1;val2;val3
-        #cad="P_POLAR"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
-        cad="STATION"  + ";" + self.HEADER + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
+        #cad="P_POLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
+        self.set_random_name()
+        cad="STATION"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
         self.send_msg( "STS" , cad)
 
     def help(self):
@@ -95,8 +99,7 @@ class SimulDriver(BaseDriver):
         self.wait_sendfile()
         self.send_station(10.0*float(items[1]), 10.0*float(items[2]), 10.0*float(items[3]) )
         time.sleep(1)
-        exit()
-
+        
         with open(filename) as f:
             #content = f.readlines()
             # you may also want to remove whitespace characters like `\n` at the end of each line

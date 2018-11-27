@@ -1,4 +1,5 @@
 class Element {
+  String _name;
   float x, y, z, w;  
   color cf,cs;
   
@@ -16,7 +17,7 @@ class Element {
   float getY() {return y;}
   float getZ() {return z;}
   
-  
+    
   void changeColor() {
     cf = color(
       int(random(0, 255)),
@@ -37,5 +38,11 @@ class Element {
     oy=y;
     oz=z;
   }
+  
+  String getName() {return _name;}
+  void setName(String name) {
+    _name=name.toUpperCase();
+  }
+  
   
 }
