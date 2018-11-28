@@ -26,11 +26,6 @@ class SimulDriver(BaseDriver):
         self.APP_NAME = "S1"
         BaseDriver.__init__(self)
 
-    #--------------------------------------
-    #   PROPIEDADES
-    #--------------------------------------
-    def set_random_name(self):
-        self.APP_NAME='DISTO'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
     #--------------------------------------
     #   COMANDOS SUB
@@ -94,12 +89,12 @@ class SimulDriver(BaseDriver):
         coords=filename[:-4]        #borra .txt
         items=coords.split("_")     #x,y,z
         if (len(items)!=4):
-            print("faltan elementos de posicion en nombre " + filename)
+            self.logger.warning("faltan elementos de posicion en nombre " + filename)
 
         self.wait_sendfile()
         self.send_station(10.0*float(items[1]), 10.0*float(items[2]), 10.0*float(items[3]) )
         time.sleep(1)
-        
+
         with open(filename) as f:
             #content = f.readlines()
             # you may also want to remove whitespace characters like `\n` at the end of each line

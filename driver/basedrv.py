@@ -43,6 +43,14 @@ class BaseDriver(object):
         return self.TYPE_DRV + ";" + self.MACHINE_NAME + ";" + self.APP_NAME
 
     @property
+    def name(self):
+        return self.APP_NAME;
+
+    @name.setter
+    def name(self, nombre):
+        self.APP_NAME=nombre        
+
+    @property
     def status(self):
         return self._status;
 
@@ -56,6 +64,19 @@ class BaseDriver(object):
             self._status=estado
             self.send_sts()
 
+    #--------------------------------------
+    #   METODOS PROTECTED (usados de forma interna ppalmente)
+    #--------------------------------------
+    def set_random_name(self):
+        self.APP_NAME='DISTO'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
+
+    def send_msg(self,topic,message_data):
+        #ref: http://zguide.zeromq.org/php:chapter2#Pub-Sub-Message-Envelopes
+        #topic y msg en mismo nivel:
+        #self._pub_socket.send("%s %s" % (topic, message_data))
+        #para separar topic de msg:
+        self._pub_socket.send_multipart([topic, message_data])
+        self.logger.info("" + "["+ topic +"]," + message_data )
 
     #--------------------------------------
     #   METODOS INIT
@@ -120,15 +141,6 @@ class BaseDriver(object):
         self.logger.info( "sub bind: " + self.zmq_sub_port() )
 
 
-
-    def send_msg(self,topic,message_data):
-        #ref: http://zguide.zeromq.org/php:chapter2#Pub-Sub-Message-Envelopes
-        #topic y msg en mismo nivel:
-        #self._pub_socket.send("%s %s" % (topic, message_data))
-        #para separar topic de msg:
-        self._pub_socket.send_multipart([topic, message_data])
-        self.logger.info("" + "["+ topic +"]," + message_data )
-
     #--------------------------------------
     #   COMANDOS
     #--------------------------------------
@@ -139,16 +151,16 @@ class BaseDriver(object):
 
     def help(self):
         self.logger.debug("help()")
-        print("drv - v0.1")
+        print("basedrv - v0.1")
         print("help:    muestra ayuda")
-        print("run:     ejecuta programa principal")
+        print("run:comando  ejecuta de forma repetida programa principal. ej: app.py run:send_hello")
 
     def run(self):
         logger.debug("run()")
         while True:
             topic = random.randrange(9999,10005)
             messagedata = random.randrange(1,215) - 80
-            print "%d %d" % (topic, messagedata)
+            self.logger.info( "%d %d" % (topic, messagedata) )
             #socket.send("%d %d" % (topic, messagedata))
             self._pub_socket.send("%d %d" % (topic, messagedata))
             time.sleep(1)
@@ -157,7 +169,7 @@ class BaseDriver(object):
         #modo   run:        consigue ejecutar la funcion de siguiete param
         #ej:    run:help
         #ej:    run:random,3
-        self.logger.debug("run(mode)")
+        self.logger.debug("run(mode)"+mode)
         count=0
         while True:
             count=count+1
@@ -190,7 +202,7 @@ class BaseDriver(object):
 
 
     def exec_commands(self):
-        self.logger.debug("exec_commands()")
+        self.logger.debug("basedrv::exec_commands()")
         params=sys.argv
         if len(params)<=1:
             self.help()
@@ -213,6 +225,7 @@ class BaseDriver(object):
                 func = getattr(self, items[0] )
                 func(items[1])
         except Exception as e:
+            self.logger.error("basedrv::exec_comands() - error al ejecutar funcion." + repr(items))
             print getattr(e, 'message', repr(e))
             self.help()
             exit(0)
