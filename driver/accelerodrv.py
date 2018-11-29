@@ -124,4 +124,4 @@ if __name__ == "__main__":
     drv.init()
 
     #MAIN
-    drv.exec_commands()
+    drv.exec_cmd_command()

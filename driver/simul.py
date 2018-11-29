@@ -15,9 +15,7 @@ from basedrv import *
 
 class SimulDriver(BaseDriver):
 
-    _x = 0
-    _y = 0
-    _z = 0
+    SCALE = 10.0
 
     def __init__(self):
         self.PORT = "8005"
@@ -27,72 +25,71 @@ class SimulDriver(BaseDriver):
         BaseDriver.__init__(self)
 
 
-    #--------------------------------------
-    #   COMANDOS SUB
-    #--------------------------------------
-    def wait_sendfile(self):
-        received=False
-        command="SENDFILE"
-        self.logger.info("esperando comando: " + command)
-        while not received:
-            try:
-                #msg = self._sub_socket.recv_string()
-                topic = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
-                msg = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
-                self.logger.info("comando topic: " + topic)
-                self.logger.info("comando rcv: " + msg)
-                items = msg.split(';')
-                if items[0]==command:
-                    received=True
-            except zmq.Again as e:
-                self.logger.debug("No message received yet")
-
-            time.sleep(1)
-
 
     #--------------------------------------
     #   COMANDOS PUB
     #--------------------------------------
-
-    def send_point(self):
-        # sts;type;machine_name;app_name;status;val1;val2;val3
-        #cad="PPOLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
-        cad="PCART"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
-        self.send_msg( "STS" , cad)
-
-    def send_station(self,x,y,z):
-        # sts;type;machine_name;app_name;status;val1;val2;val3
-        #cad="P_POLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
-        self.set_random_name()
-        cad="STATION"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
-        self.send_msg( "STS" , cad)
-
     def help(self):
         BaseDriver.help(self)
-        print("random:     ejecuta programa principal generando posiciones aleatorias")
+        print("random       lanza un evento con puntos cartesianos aleatorios. usado en pruebas.")
+        print("constant     lanza un evento con puntos cartesianos concretos. usado en pruebas.")
+        print("send_point:x,y,z      lanza un evento con punto cartesianos concreto")
+        print("send_station:x,y,z    lanza un evento con estacion en cierto punto")
+        print("file:nombrefich_x_y_z.txt    procesa el fichero de puntos indicado")
 
     def random(self,valor=50):
-        global _x;
-        global _y;
-        global _z;
         valor=int(valor)  #provoca excepcion si no es int
-        _x = random.randrange(0,valor)
-        _y = random.randrange(0,valor)
-        _z = random.randrange(0,valor)
-        self.send_point()
+        x = random.randrange(0,valor)
+        y = random.randrange(0,valor)
+        z = random.randrange(0,valor)
+        self.send_point(x,y,z)
+
+    def constant(self,valor=50):
+        valor=int(valor)    #provoca excepcion si no es int
+        self.send_point(valor,valor,valor)     #manda siempre (aunque no cambie el valor)
+
+    def send_point(self,x,y,z):
+        try:
+            x=self.SCALE*float(x);
+            y=self.SCALE*float(y);
+            z=self.SCALE*float(z);
+
+            # sts;type;machine_name;app_name;status;val1;val2;val3
+            #cad="PPOLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
+            cad="PCART"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
+            self.send_msg( "STS" , cad)
+        except:
+            self.logger.error("simul::send_point() - parametro no es de tipo float "+str(x)+","+str(y)+","+str(z))
+
+    def send_station(self,x,y,z):
+        try:
+            x=float(self.SCALE)*float(x);
+            self.logger.debug("simul::send_station() - " + str(x))
+            y=float(self.SCALE)*float(y);
+            self.logger.debug("simul::send_station() - " + str(y))
+            z=float(self.SCALE)*float(z);
+            self.logger.debug("simul::send_station() - " + str(z))
+
+
+            # sts;type;machine_name;app_name;status;val1;val2;val3
+            #cad="P_POLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
+            self.set_random_name()
+            self.logger.info("simul::send_station() - " + self.name)
+            cad="STATION"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
+            self.send_msg( "STS" , cad)
+            self.logger.info("simul::send_station() - " + self.cad)
+        except:
+            self.logger.error("simul::send_station() - parametro no es de tipo float "+str(x)+","+str(y)+","+str(z))
 
     def file(self,filename="output_x_y_z.txt"):
-        global _x;
-        global _y;
-        global _z;
-
         coords=filename[:-4]        #borra .txt
         items=coords.split("_")     #x,y,z
         if (len(items)!=4):
-            self.logger.warning("faltan elementos de posicion en nombre " + filename)
+            self.logger.warning("faltan elementos de posicion de disto en nombre " + filename)
 
-        self.wait_sendfile()
-        self.send_station(10.0*float(items[1]), 10.0*float(items[2]), 10.0*float(items[3]) )
+        self.wait_sck_command("SENDFILE")
+        self.send_station(items[1], items[2], items[3] )
+        self.send_msg( "STS" , "START_TRANSMISSION")
         time.sleep(1)
 
         with open(filename) as f:
@@ -102,19 +99,10 @@ class SimulDriver(BaseDriver):
             for line in f:
                 elems=line.rstrip().split(';')
                 if len(elems) == 3:
-                    _x=10.0*float(elems[0]);
-                    _y=10.0*float(elems[1]);
-                    _z=10.0*float(elems[2]);
-                    self.send_point()
+                    self.send_point(elems[0],elems[1],elems[2])
+                self.exec_sck_command()
 
-            exit(0)
-
-
-
-    def constant(self,valor=50):
-        valor=int(valor)    #provoca excepcion si no es int
-        self.send_point()     #manda siempre (aunque no cambie el valor)
-
+        self.send_msg( "STS" , "END_TRANSMISSION")
 
 
 
@@ -123,4 +111,4 @@ if __name__ == "__main__":
     drv.init()
 
     #MAIN
-    drv.exec_commands()
+    drv.exec_cmd_command()

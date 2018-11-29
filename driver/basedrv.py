@@ -6,6 +6,7 @@ import random
 import sys
 import time
 import logging
+import string
 
 from logging.handlers import TimedRotatingFileHandler
 
@@ -48,7 +49,7 @@ class BaseDriver(object):
 
     @name.setter
     def name(self, nombre):
-        self.APP_NAME=nombre        
+        self.APP_NAME=nombre
 
     @property
     def status(self):
@@ -140,23 +141,119 @@ class BaseDriver(object):
         self.logger.info( "pub  bind: " + self.zmq_pub_port() )
         self.logger.info( "sub bind: " + self.zmq_sub_port() )
 
+    def init(self):
+        #LOGGING
+        self.logger_init()
+        #ZMQ
+        self.zmq_init()
+        #envia saludo para inicializar msg. se necesita pq se pierde el primero!
+        self.send_hello()
+
+    #--------------------------------------
+    #   GESTION COMANDOS
+    #--------------------------------------
+
+    #ejecuta la funcion que corresponda
+    def exec_command(self,command):
+        #ejecuta funcion con params separados por : . usado por linea de comandos o subscripcion de comandos
+        self.logger.debug("basedrv::exec_command() - "+command)
+        func,param="",""
+        items=None
+        try:
+            #ejecuta la funcion correspondiente
+            #   a) si no tiene parametros: ej app run => run()
+            #   b) si tiene un param: ej app test:connection => test("connection")
+            items=command.split(':')
+            if (len(items)==1):
+                #self.globals()[items[0]]()
+                func = getattr(self, items[0] )
+                func()
+            if (len(items)==2):
+                #self.globals()[items[0]](items[1])
+                func = getattr(self, items[0] )
+                func(items[1])
+        except Exception as e:
+            self.logger.error("basedrv::exec_comand() - error al ejecutar funcion." + repr(items))
+            print getattr(e, 'message', repr(e))
+
+
+    #bloquea la ejecucion hasta que llega por socket el comando deseado y al final ejecuta la funcion
+    def wait_sck_command(self, command, timeout=10):
+        received=False
+        self.logger.info("basedrv::wait_sck_commmand() - esperando comando: " + command)
+        times=0
+        while not received and times<=timeout:
+            try:
+                #msg = self._sub_socket.recv_string()
+                topic = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
+                msg = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
+                self.logger.debug("comando topic: " + topic)
+                self.logger.debug("comando rcv: " + msg)
+                items = msg.split(';')
+                if topic=="COMMAND" and items[0].upper()==command:
+                    received=True
+            except zmq.Again as e:
+                pass
+
+            if received==False:
+                self.logger.debug("basedrv::wait_sck_commmand() - no message received yet. waiting " + command)
+
+            time.sleep(1)
+            times+=1
+
+        if times>=timeout:
+            self.logger.info("basedrv::wait_sck_commmand() - timeout "+ str(timeout) + "s esperando comando: " + command)
+            exit(0)
+            
+        if received==True:
+            self.logger.info("basedrv::wait_sck_commmand() - recibido comando: " + command)
+            self.exec_command(command)
+
+    #ejecuta la funcion recibida mediante socket (no bloquea)
+    def exec_sck_command(self):
+        try:
+            #msg = self._sub_socket.recv_string()
+            topic = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
+            msg = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
+            self.logger.debug("comando topic: " + topic)
+            self.logger.debug("comando rcv: " + msg)
+            items = msg.split(';')
+            if topic=="COMMAND":
+                self.exec_command(items[0])
+        except zmq.Again as e:
+            pass
+
+    #carga el comando y los parametros desde linea de comandos
+    def exec_cmd_command(self):
+        self.logger.debug("basedrv::exec_cmd_command()")
+        params=sys.argv
+        if len(params)<=1:
+            self.help()
+            self.logger.error("basedrv::exec_cmd_command() - faltan parametros. ej: app.py comando:params")
+            exit(0)
+
+        self.exec_command(params[1])
+        exit(0)
+
+
 
     #--------------------------------------
     #   COMANDOS
     #--------------------------------------
+    def help(self):
+        self.logger.debug("help()")
+        print("basedrv - v0.1")
+        print("send_hello   lanza un unico evento. debe ser recibido por todos")
+        print("run:comando  ejecuta de forma repetida programa principal. ej: app.py run:send_hello")
+        print("help:        muestra ayuda")
+
     def send_hello(self):
         # hi;type;machine_name;app_name;status;val1;val2;val3
         cad="HI"  + ";" + self.header + ";"
         self.send_msg( "HI" , cad)
 
-    def help(self):
-        self.logger.debug("help()")
-        print("basedrv - v0.1")
-        print("help:    muestra ayuda")
-        print("run:comando  ejecuta de forma repetida programa principal. ej: app.py run:send_hello")
-
-    def run(self):
-        logger.debug("run()")
+    def test(self):
+        logger.debug("test()")
         while True:
             topic = random.randrange(9999,10005)
             messagedata = random.randrange(1,215) - 80
@@ -178,58 +275,18 @@ class BaseDriver(object):
                 func=None
                 if (len(items)==1):
                     func = getattr(self, items[0] )
-                    func()
+                    func()  #ejecuta sin params
                 if (len(items)==2):
                     func = getattr(self, items[0] )
-                    func(items[1])
+                    func(items[1]) #ejecuta con params (string comma separated)
 
                 #    self.error("run(mode) - no existe modo: " + mode)
 
+            self.exec_sck_command()
             time.sleep(1)
 
-
-    #--------------------------------------
-    #   METODOS PUBLICOS
-    #--------------------------------------
-    def init(self):
-        #LOGGING
-        self.logger_init()
-        #ZMQ
-        self.zmq_init()
-        #envia saludo para inicializar msg. se necesita pq se pierde el primero!
-        self.send_hello()
-
-
-
-    def exec_commands(self):
-        self.logger.debug("basedrv::exec_commands()")
-        params=sys.argv
-        if len(params)<=1:
-            self.help()
-            exit(0)
-
-
-        func,param="",""
-        items=None
-        try:
-            #ejecuta la funcion correspondiente
-            #   a) si no tiene parametros: ej app run => run()
-            #   b) si tiene un param: ej app test:connection => test("connection")
-            items=params[1].split(':')
-            if (len(items)==1):
-                #self.globals()[items[0]]()
-                func = getattr(self, items[0] )
-                func()
-            if (len(items)==2):
-                #self.globals()[items[0]](items[1])
-                func = getattr(self, items[0] )
-                func(items[1])
-        except Exception as e:
-            self.logger.error("basedrv::exec_comands() - error al ejecutar funcion." + repr(items))
-            print getattr(e, 'message', repr(e))
-            self.help()
-            exit(0)
-
+    def exit(self, errno=0):
+        exit(errno)
 
 
 if __name__ == "__main__":
