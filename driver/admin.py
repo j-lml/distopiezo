@@ -25,7 +25,7 @@ class AdminDisto(BaseDriver):
     def init(self):
         BaseDriver.init(self)
 
-        self._pub_socket.bind("tcp://127.0.0.1:%s" % 9005 ) #para enviar ordenes a simul
+        self._pub_socket.connect("tcp://127.0.0.1:%s" % 9005 ) #para enviar ordenes a simul
 
         #subscribir a tema
         self._sub_socket.connect("tcp://localhost:%s" % 8001)   #compass
@@ -53,7 +53,7 @@ class AdminDisto(BaseDriver):
         cmd=None
         wait = True
         while wait == True:
-            #solicita que comienze la transmision            
+            #solicita que comienze la transmision
             self.send_command("SENDFILE","")
 
             #lee datos
