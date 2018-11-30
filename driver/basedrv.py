@@ -71,14 +71,6 @@ class BaseDriver(object):
     def set_random_name(self):
         self.APP_NAME='DISTO'+''.join(random.choice(string.ascii_uppercase + string.digits) for _ in range(6))
 
-    def send_msg(self,topic,message_data):
-        #ref: http://zguide.zeromq.org/php:chapter2#Pub-Sub-Message-Envelopes
-        #topic y msg en mismo nivel:
-        #self._pub_socket.send("%s %s" % (topic, message_data))
-        #para separar topic de msg:
-        self._pub_socket.send_multipart([topic, message_data])
-        self.logger.info("" + "["+ topic +"]," + message_data )
-
     #--------------------------------------
     #   METODOS INIT
     #--------------------------------------
@@ -131,7 +123,7 @@ class BaseDriver(object):
         self._sub_socket.connect("tcp://localhost:%s" % self.zmq_sub_port())
 
         #subscribir a tema
-        filter = "COMMAND"
+        filter = ""
         # Python 2 - ascii bytes to unicode str
         if isinstance(filter, bytes):
             filter = filter.decode('ascii')
@@ -150,32 +142,25 @@ class BaseDriver(object):
         self.send_hello()
 
     #--------------------------------------
-    #   GESTION COMANDOS
+    #   GESTION SOCKET
     #--------------------------------------
 
-    #ejecuta la funcion que corresponda
-    def exec_command(self,command):
-        #ejecuta funcion con params separados por : . usado por linea de comandos o subscripcion de comandos
-        self.logger.debug("basedrv::exec_command() - "+command)
-        func,param="",""
-        items=None
-        try:
-            #ejecuta la funcion correspondiente
-            #   a) si no tiene parametros: ej app run => run()
-            #   b) si tiene un param: ej app test:connection => test("connection")
-            items=command.split(':')
-            if (len(items)==1):
-                #self.globals()[items[0]]()
-                func = getattr(self, items[0] )
-                func()
-            if (len(items)==2):
-                #self.globals()[items[0]](items[1])
-                func = getattr(self, items[0] )
-                func(items[1])
-        except Exception as e:
-            self.logger.error("basedrv::exec_comand() - error al ejecutar funcion." + repr(items))
-            print getattr(e, 'message', repr(e))
+    #envia mensaje a pelo
+    def send_msg(self,topic,message_data):
+        #ref: http://zguide.zeromq.org/php:chapter2#Pub-Sub-Message-Envelopes
+        #topic y msg en mismo nivel:
+        #self._pub_socket.send("%s %s" % (topic, message_data))
+        #para separar topic de msg:
+        self._pub_socket.send_multipart([topic, message_data])
+        self.logger.info("" + "["+ topic +"]," + message_data )
 
+    def send_command(self,command,data):
+        msg=command + ";" + self.header + ";" + data;
+        self.send_msg("COMMAND", msg)
+
+    def send_event(self,event,data):
+        msg=event + ";" + self.header + ";"+ self.status + ";" + data;
+        self.send_msg("EVENT", msg)
 
     #bloquea la ejecucion hasta que llega por socket el comando deseado y al final ejecuta la funcion
     def wait_sck_command(self, command, timeout=10):
@@ -204,24 +189,64 @@ class BaseDriver(object):
         if times>=timeout:
             self.logger.info("basedrv::wait_sck_commmand() - timeout "+ str(timeout) + "s esperando comando: " + command)
             exit(0)
-            
+
         if received==True:
             self.logger.info("basedrv::wait_sck_commmand() - recibido comando: " + command)
             self.exec_command(command)
 
-    #ejecuta la funcion recibida mediante socket (no bloquea)
-    def exec_sck_command(self):
+    #lee de sub_socket pero no bloque. devuelve None,None,None si error
+    def read_sck_command(self):
+        topic=None
+        cmd=None
+        msg=None
         try:
             #msg = self._sub_socket.recv_string()
             topic = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
             msg = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
-            self.logger.debug("comando topic: " + topic)
-            self.logger.debug("comando rcv: " + msg)
-            items = msg.split(';')
-            if topic=="COMMAND":
-                self.exec_command(items[0])
+            cmd=msg.split(';')[0]
         except zmq.Again as e:
             pass
+        return topic,cmd,msg
+
+    #lee de sub_socket y bloquea
+    def read_sck_command_sync(self):
+        topic = self._sub_socket.recv_string()
+        msg = self._sub_socket.recv_string()
+        cmd=msg.split(';')[0]
+        return topic,cmd,msg
+
+    #--------------------------------------
+    #   GESTION COMANDOS
+    #--------------------------------------
+
+    #ejecuta la funcion que corresponda
+    def exec_command(self,command):
+        #ejecuta funcion con params separados por : . usado por linea de comandos o subscripcion de comandos
+        self.logger.debug("basedrv::exec_command() - "+command)
+        func,param="",""
+        items=None
+        try:
+            #ejecuta la funcion correspondiente
+            #   a) si no tiene parametros: ej app run => run()
+            #   b) si tiene un param: ej app test:connection => test("connection")
+            items=command.split(':')
+            if (len(items)==1):
+                #self.globals()[items[0]]()
+                func = getattr(self, items[0] )
+                func()
+            if (len(items)==2):
+                #self.globals()[items[0]](items[1])
+                func = getattr(self, items[0] )
+                func(items[1])
+        except Exception as e:
+            self.logger.error("basedrv::exec_comnand() - error al ejecutar funcion." + repr(items))
+            print getattr(e, 'message', repr(e))
+
+    #ejecuta la funcion recibida mediante socket (no bloquea)
+    def exec_sck_command(self):
+        topic, cmd, msg = self.read_sck_command()
+        if topic=="COMMAND":
+            self.exec_command(cmd)
 
     #carga el comando y los parametros desde linea de comandos
     def exec_cmd_command(self):
@@ -248,9 +273,8 @@ class BaseDriver(object):
         print("help:        muestra ayuda")
 
     def send_hello(self):
-        # hi;type;machine_name;app_name;status;val1;val2;val3
-        cad="HI"  + ";" + self.header + ";"
-        self.send_msg( "HI" , cad)
+        # hi;type;machine_name;app_name;status;val1;val2;val3        
+        self.send_event( "HI" , "")
 
     def test(self):
         logger.debug("test()")

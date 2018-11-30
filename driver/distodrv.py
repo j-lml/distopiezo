@@ -48,8 +48,8 @@ class DistoDriver(BaseDriver):
 
     def send_sts(self):
         # sts;type;machine_name;app_name;status;val1;val2;val3
-        cad="STS"  + ";" + self.header + ";" + str(self.status) + ";" + str(self.distance) + ";"
-        self.send_msg( "STS" , cad)
+        cad=str(self.distance)
+        self.send_event( "STS" , cad)
 
     def help(self):
         BaseDriver.help(self)

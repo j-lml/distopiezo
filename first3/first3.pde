@@ -27,10 +27,10 @@ void setup() {
   ZMQ.Context context = ZMQ.context(1);
   subscriber = context.socket(ZMQ.SUB);
   subscriber.connect("tcp://127.0.0.1:8001");  //compass
-  subscriber.connect("tcp://127.0.0.1:8002");  //accel
+  subscriber.connect("tcp://127.0.0.1:8002");  //accelsts
   subscriber.connect("tcp://127.0.0.1:8003");  //disto
   subscriber.connect("tcp://127.0.0.1:8005");  //simulador
-  String filter="STS";
+  String filter="EVENT";
   subscriber.subscribe(filter.getBytes());
   subscriber.setReceiveTimeOut(10);
   

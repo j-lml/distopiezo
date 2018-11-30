@@ -37,6 +37,11 @@ class AdminDisto(BaseDriver):
             filter = filter.decode('ascii')
         self._sub_socket.setsockopt_string(zmq.SUBSCRIBE, filter)
 
+        filter = "COMMAND"
+        if isinstance(filter, bytes):
+            filter = filter.decode('ascii')
+        self._sub_socket.setsockopt_string(zmq.SUBSCRIBE, filter)
+
     #--------------------------------------
     #   COMANDOS PUB
     #--------------------------------------
@@ -44,21 +49,30 @@ class AdminDisto(BaseDriver):
         BaseDriver.help(self)
 
     def recfile(self):
-        #solicita que comienze la transmision
-        self.send_msg("COMMAND","SENDFILE")
+
+        cmd=None
+        wait = True
+        while wait == True:
+            #solicita que comienze la transmision            
+            self.send_command("SENDFILE","")
+
+            #lee datos
+            topic,cmd,msg=self.read_sck_command()
+            if cmd == "TRANSMISSION_STARTED":
+                wait = False
+            time.sleep(1)
+
 
         run = True
         while run==True:
             try:
-                #msg = self._sub_socket.recv_string()
-                topic = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
-                msg = self._sub_socket.recv_string(flags=zmq.NOBLOCK)
-
+                topic,cmd,msg=self.read_sck_command_sync()
                 cmd=msg.split(';')[0]
-                if cmd == "START_TRANSMISSION":
+                if cmd == "TRANSMISSION_STARTED":
                     self.logger.debug("comando rcv: " + msg)
-                if cmd == "END_TRANSMISSION":
+                if cmd == "TRANSMISSION_ENDED":
                     self.logger.debug("comando rcv: " + msg)
+                    self.logger.debug("" + msg)
                     run=False
                 if cmd == "PCART":
                     self.logger.debug("" + msg)

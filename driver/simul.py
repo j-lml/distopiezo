@@ -56,18 +56,18 @@ class SimulDriver(BaseDriver):
 
             # sts;type;machine_name;app_name;status;val1;val2;val3
             #cad="PPOLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
-            cad="PCART"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
-            self.send_msg( "STS" , cad)
+            cad=str(x) + ";" + str(y) + ";" + str(z)
+            self.send_event( "PCART" , cad)
         except:
             self.logger.error("simul::send_point() - parametro no es de tipo float "+str(x)+","+str(y)+","+str(z))
 
     def send_station(self,x,y,z):
         try:
-            x=float(self.SCALE)*float(x);
+            x=float(self.SCALE)/10*float(x);
             self.logger.debug("simul::send_station() - " + str(x))
-            y=float(self.SCALE)*float(y);
+            y=float(self.SCALE)/10*float(y);
             self.logger.debug("simul::send_station() - " + str(y))
-            z=float(self.SCALE)*float(z);
+            z=float(self.SCALE)/10*float(z);
             self.logger.debug("simul::send_station() - " + str(z))
 
 
@@ -75,8 +75,8 @@ class SimulDriver(BaseDriver):
             #cad="P_POLAR"  + ";" + self.header + ";" + str(self.status) + ";" + str(_x) + ";" + str(_y) + ";" + str(_z) + ";"
             self.set_random_name()
             self.logger.info("simul::send_station() - " + self.name)
-            cad="STATION"  + ";" + self.header + ";" + str(self.status) + ";" + str(x) + ";" + str(y) + ";" + str(z) + ";"
-            self.send_msg( "STS" , cad)
+            cad=str(x) + ";" + str(y) + ";" + str(z)
+            self.send_event( "STATION" , cad)
             self.logger.info("simul::send_station() - " + self.cad)
         except:
             self.logger.error("simul::send_station() - parametro no es de tipo float "+str(x)+","+str(y)+","+str(z))
@@ -89,7 +89,7 @@ class SimulDriver(BaseDriver):
 
         self.wait_sck_command("SENDFILE")
         self.send_station(items[1], items[2], items[3] )
-        self.send_msg( "STS" , "START_TRANSMISSION")
+        self.send_event("TRANSMISSION_STARTED","")
         time.sleep(1)
 
         with open(filename) as f:
@@ -102,7 +102,7 @@ class SimulDriver(BaseDriver):
                     self.send_point(elems[0],elems[1],elems[2])
                 self.exec_sck_command()
 
-        self.send_msg( "STS" , "END_TRANSMISSION")
+        self.send_event("TRANSMISSION_ENDED", "")
 
 
 

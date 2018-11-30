@@ -51,8 +51,8 @@ class CompassDriver(BaseDriver):
 
     def send_sts(self):
         # sts;type;machine_name;app_name;status;val1;val2;val3
-        cad="STS"  + ";" + self.header + ";" + str(self.status) + ";" + str(self.angle) + ";"
-        self.send_msg( "STS" , cad)
+        cad=str(self.angle) + ";"
+        self.send_event( "STS" , cad)
 
     def random(self,valor=360):
         valor=int(valor)  #provoca excepcion si no es int
